@@ -2,7 +2,7 @@
 
 namespace Discounter.Infra;
 
-public class DiscounterService(IDiscountRepository repository, IRandomGenerator generator) : IDiscounterService {
+public class DiscountService(IDiscountRepository repository, IRandomGenerator generator) : IDiscountService {
     public Models.GenerateResponse GenerateCodes(Models.GenerateRequest request) {
         if (request.Length is < 7 or > 8) {
             return new Models.GenerateResponse(false, null, "Code length must be between 7 and 8 characters.");
@@ -21,10 +21,9 @@ public class DiscounterService(IDiscountRepository repository, IRandomGenerator 
             .SelectAwait(async _ => {
                 for (var attempt = 0; attempt < maxAttempts; attempt++) {
                     var code = generator.GenerateCode(request.Length);
-                    if (await repository.IsCodeUniqueAsync(code)) {
-                        await repository.SaveCodeAsync(code);
-                        return code;
-                    }
+                    if (!await repository.IsCodeUniqueAsync(code)) continue;
+                    await repository.SaveCodeAsync(code);
+                    return code;
                 }
                 throw new Exception($"Failed to generate a unique code after {maxAttempts} attempts."); 
             });

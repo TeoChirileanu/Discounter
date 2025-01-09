@@ -6,7 +6,7 @@ using NSubstitute;
 
 namespace Discounter.Tests;
 
-public class DiscounterServiceTests {
+public class DiscountServiceTests {
     private readonly IDiscountRepository _repository = Substitute.For<IDiscountRepository>();
     private readonly IRandomGenerator _generator = new FileSystemRandomGenerator();
     
@@ -24,7 +24,7 @@ public class DiscounterServiceTests {
     [TestCase((ushort)2001, 8)]
     public void GenerateCodes_ShouldReturnError_WhenCalledWithInvalidParameters(ushort count, byte length) {
         // Arrange
-        IDiscounterService service = new DiscounterService(_repository, _generator);
+        IDiscountService service = new DiscountService(_repository, _generator);
 
         // Act
         var generateResponse = service.GenerateCodes(new Models.GenerateRequest(count, length));
@@ -38,7 +38,7 @@ public class DiscounterServiceTests {
     public async Task GenerateCodes_ShouldGenerateOneCode_WhenCalledWithValidParameters(ushort count, byte length) {
         // Arrange
         _repository.IsCodeUniqueAsync(Arg.Any<string>()).ReturnsForAnyArgs(true);
-        IDiscounterService service = new DiscounterService(_repository, _generator);
+        IDiscountService service = new DiscountService(_repository, _generator);
         
         // Act
         var generateResponse = service.GenerateCodes(new Models.GenerateRequest(count, length));
@@ -56,7 +56,7 @@ public class DiscounterServiceTests {
     public async Task GenerateCodes_ShouldReturnError_WhenGenerationFails(ushort count, byte length) {
         // Arrange
         _repository.IsCodeUniqueAsync(Arg.Any<string>()).ReturnsForAnyArgs(false);
-        IDiscounterService service = new DiscounterService(_repository, _generator);
+        IDiscountService service = new DiscountService(_repository, _generator);
         
         // Act
         var generateResponse = service.GenerateCodes(new Models.GenerateRequest(count, length));
@@ -74,7 +74,7 @@ public class DiscounterServiceTests {
     public async Task GenerateCodes_ShouldGenerateMaxCode_WhenCalledWithValidParameters(ushort count, byte length) {
         // Arrange
         _repository.IsCodeUniqueAsync(Arg.Any<string>()).ReturnsForAnyArgs(true);
-        IDiscounterService service = new DiscounterService(_repository, _generator);
+        IDiscountService service = new DiscountService(_repository, _generator);
         
         // Act
         var generateResponse = service.GenerateCodes(new Models.GenerateRequest(count, length));
@@ -97,7 +97,7 @@ public class DiscounterServiceTests {
     [TestCase("123456789")]
     public async Task UseCodeAsync_ShouldReturnError_WhenCalledWithInvalidCode(string code) {
         // Arrange
-        IDiscounterService service = new DiscounterService(_repository, _generator);
+        IDiscountService service = new DiscountService(_repository, _generator);
         
         // Act
         var useCodeResponse = await service.UseCodeAsync(new Models.UseCodeRequest(code));
@@ -111,7 +111,7 @@ public class DiscounterServiceTests {
     public async Task UseCodeAsync_ShouldReturnError_WhenCodeNotFound() {
         // Arrange
         _repository.GetCodeAsync(Arg.Any<string>()).ReturnsForAnyArgs((Models.DiscountCode)null);
-        IDiscounterService service = new DiscounterService(_repository, _generator);
+        IDiscountService service = new DiscountService(_repository, _generator);
         
         // Act
         var useCodeResponse = await service.UseCodeAsync(new Models.UseCodeRequest("1234567"));
@@ -126,7 +126,7 @@ public class DiscounterServiceTests {
         // Arrange
         var discountCode = new Models.DiscountCode("1234567", true);
         _repository.GetCodeAsync(Arg.Any<string>()).ReturnsForAnyArgs(discountCode);
-        IDiscounterService service = new DiscounterService(_repository, _generator);
+        IDiscountService service = new DiscountService(_repository, _generator);
         
         // Act
         var useCodeResponse = await service.UseCodeAsync(new Models.UseCodeRequest("1234567"));
@@ -142,7 +142,7 @@ public class DiscounterServiceTests {
         var discountCode = new Models.DiscountCode("1234567", false);
         _repository.GetCodeAsync(Arg.Any<string>()).ReturnsForAnyArgs(discountCode);
         _repository.MarkCodeAsUsedAsync(Arg.Any<string>()).ReturnsForAnyArgs(false);
-        IDiscounterService service = new DiscounterService(_repository, _generator);
+        IDiscountService service = new DiscountService(_repository, _generator);
         
         // Act
         var useCodeResponse = await service.UseCodeAsync(new Models.UseCodeRequest("1234567"));
@@ -158,7 +158,7 @@ public class DiscounterServiceTests {
         var discountCode = new Models.DiscountCode("1234567", false);
         _repository.GetCodeAsync(Arg.Any<string>()).ReturnsForAnyArgs(discountCode);
         _repository.MarkCodeAsUsedAsync(Arg.Any<string>()).ReturnsForAnyArgs(true);
-        IDiscounterService service = new DiscounterService(_repository, _generator);
+        IDiscountService service = new DiscountService(_repository, _generator);
         
         // Act
         var useCodeResponse = await service.UseCodeAsync(new Models.UseCodeRequest("1234567"));
